@@ -1,40 +1,19 @@
 @import "tailwindcss";
 
-/* Palette « café » de kaysuto.fr : bruns chauds, crème et sable. */
+/* Sombre et technique : gris neutres, bordures fines, un seul accent orange. */
 :root {
-  --background: oklch(95.93% 0.0103 82);
-  --foreground: oklch(34.74% 0.0362 45.5);
-  --card: oklch(98.8% 0.005 82);
-  --surface: oklch(90.5% 0.018 78);
-  --border: oklch(84.27% 0.028 72.8);
-  --input: oklch(88.5% 0.023 76);
-  --muted: oklch(49.87% 0.057 53.2);
-  --primary: oklch(34.74% 0.0362 45.5);
-  --primary-foreground: oklch(95.93% 0.0103 82);
-  --accent: oklch(69.19% 0.0486 63.7);
-  --accent-text: oklch(49.87% 0.057 53.2);
-  --success: oklch(49.5% 0.085 140);
-  --corail: oklch(60% 0.115 38);
-  --destructive: oklch(50.5% 0.16 30);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: oklch(19% 0.017 46);
-    --foreground: oklch(95.93% 0.0103 82);
-    --card: oklch(23.5% 0.019 46);
-    --surface: oklch(29.5% 0.024 48);
-    --border: oklch(34.5% 0.028 50);
-    --input: oklch(31.5% 0.026 49);
-    --muted: oklch(75.5% 0.035 68);
-    --primary: oklch(90% 0.02 78);
-    --primary-foreground: oklch(20% 0.018 46);
-    --accent: oklch(75% 0.05 64);
-    --accent-text: oklch(80% 0.05 66);
-    --success: oklch(75% 0.085 140);
-    --corail: oklch(73% 0.115 38);
-    --destructive: oklch(65.5% 0.16 30);
-  }
+  color-scheme: dark;
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --card: #111111;
+  --surface: #171717;
+  --border: #222222;
+  --border-strong: #2e2e2e;
+  --muted: #8f8f8f;
+  --accent: #ff6b35;
+  --success: #3ecf8e;
+  --warning: #f5a524;
+  --danger: #f2555a;
 }
 
 @theme inline {
@@ -43,35 +22,21 @@
   --color-card: var(--card);
   --color-surface: var(--surface);
   --color-border: var(--border);
-  --color-input: var(--input);
+  --color-border-strong: var(--border-strong);
   --color-muted: var(--muted);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
   --color-accent: var(--accent);
-  --color-accent-text: var(--accent-text);
   --color-success: var(--success);
-  --color-corail: var(--corail);
-  --color-destructive: var(--destructive);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-/* Petites étiquettes en capitales espacées, comme les légendes du portfolio. */
-@utility label {
-  font-family: var(--font-geist-mono);
-  font-size: 0.75rem;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-/* Grille de points discrète en fond de page. */
-@utility bg-dots {
-  background-image: radial-gradient(color-mix(in oklch, var(--foreground) 14%, transparent) 1px, transparent 1.2px);
-  background-size: 24px 24px;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
+}
+
+::selection {
+  background: color-mix(in oklab, var(--accent) 35%, transparent);
 }

@@ -2,12 +2,12 @@ import { fetchRepo, type RepoData } from "@/lib/github";
 import { parseRepo } from "@/lib/repo-url";
 import { analyzeReadme, type Check, type Grade, type Report } from "@/lib/rules";
 
-const GRADE_STYLE: Record<Grade, string> = {
-  A: "bg-success/15 text-success",
-  B: "bg-success/10 text-success",
-  C: "bg-accent/20 text-accent-text",
-  D: "bg-corail/15 text-corail",
-  F: "bg-destructive/15 text-destructive",
+const GRADE_COLOR: Record<Grade, string> = {
+  A: "text-success border-success/30 bg-success/10",
+  B: "text-success border-success/30 bg-success/10",
+  C: "text-warning border-warning/30 bg-warning/10",
+  D: "text-accent border-accent/30 bg-accent/10",
+  F: "text-danger border-danger/30 bg-danger/10",
 };
 
 const ERRORS = {
@@ -55,50 +55,51 @@ function ReportView({ repo, report }: { repo: RepoData; report: Report }) {
   // Les règles ratées d'abord, celles qui coûtent le plus en tête.
   const checks = [...report.checks].sort((a, b) => b.max - b.earned - (a.max - a.earned));
   const stats = [
-    ["mots", report.stats.words],
-    ["sections", report.stats.sections],
-    ["blocs de code", report.stats.codeBlocks],
-    ["captures", report.stats.screenshots],
-    ["badges", report.stats.badges],
+    ["Mots", report.stats.words],
+    ["Sections", report.stats.sections],
+    ["Blocs de code", report.stats.codeBlocks],
+    ["Captures", report.stats.screenshots],
+    ["Badges", report.stats.badges],
   ] as const;
 
   return (
-    <section aria-labelledby="verdict" className="mt-14 overflow-hidden rounded-xl border border-border bg-card">
-      <div className="flex flex-col gap-6 p-6 sm:flex-row sm:items-center sm:p-8">
-        <div
-          className={`flex size-24 shrink-0 items-center justify-center rounded-lg text-5xl font-semibold tracking-tight ${GRADE_STYLE[report.grade]}`}
-          aria-label={`Note ${report.grade}`}
-        >
-          {report.grade}
-        </div>
-        <div className="min-w-0 flex-1">
-          <a href={repo.readmeUrl ?? repo.url} className="label transition hover:text-foreground">
-            {repo.owner}/{repo.name}
+    <section aria-labelledby="verdict" className="mt-12 rounded-lg border border-border bg-card">
+      <div className="p-5 sm:p-6">
+        <div className="flex items-center justify-between gap-4">
+          <a
+            href={repo.readmeUrl ?? repo.url}
+            className="truncate font-mono text-sm text-muted transition hover:text-foreground"
+          >
+            {repo.owner}/{repo.name} ↗
           </a>
-          <p className="mt-2 text-4xl font-semibold tracking-tight tabular-nums">
-            {report.score}
-            <span className="text-lg font-normal text-muted"> / 100</span>
-          </p>
-          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-surface" aria-hidden>
-            <div className="h-full rounded-full bg-accent" style={{ width: `${report.score}%` }} />
-          </div>
-          <p id="verdict" className="mt-3 text-muted text-pretty">
-            {report.verdict}
-          </p>
+          <span
+            className={`shrink-0 rounded-md border px-2 py-0.5 font-mono text-xs font-medium ${GRADE_COLOR[report.grade]}`}
+          >
+            Note {report.grade}
+          </span>
         </div>
+        <p className="mt-4 text-6xl font-semibold tracking-[-0.05em] tabular-nums">
+          {report.score}
+          <span className="ml-1 text-xl font-normal tracking-normal text-muted">/100</span>
+        </p>
+        <div className="mt-4 h-1 overflow-hidden rounded-full bg-surface" aria-hidden>
+          <div className="h-full rounded-full bg-accent" style={{ width: `${report.score}%` }} />
+        </div>
+        <p id="verdict" className="mt-4 text-sm text-muted text-pretty">
+          {report.verdict}
+        </p>
       </div>
 
-      {/* Trois cases par ligne sur mobile : les deux dernières s'élargissent au lieu de laisser un trou. */}
-      <dl className="flex flex-wrap gap-px border-t border-border bg-border">
+      <dl className="grid grid-cols-3 gap-px border-y border-border bg-border sm:grid-cols-5">
         {stats.map(([label, value]) => (
-          <div key={label} className="flex flex-1 basis-[30%] flex-col-reverse items-center gap-1 bg-card px-3 py-5 text-center sm:basis-0">
-            <dt className="label text-[0.65rem]">{label}</dt>
-            <dd className="text-2xl font-semibold tabular-nums">{value.toLocaleString("fr-FR")}</dd>
+          <div key={label} className="bg-card px-4 py-3 max-sm:last:col-span-2">
+            <dt className="text-xs text-muted">{label}</dt>
+            <dd className="mt-0.5 font-mono text-lg tabular-nums">{value.toLocaleString("fr-FR")}</dd>
           </div>
         ))}
       </dl>
 
-      <ul className="divide-y divide-border border-t border-border">
+      <ul className="divide-y divide-border">
         {checks.map((check) => (
           <CheckRow key={check.id} check={check} />
         ))}
@@ -108,45 +109,46 @@ function ReportView({ repo, report }: { repo: RepoData; report: Report }) {
 }
 
 function CheckRow({ check }: { check: Check }) {
-  const status = check.earned === check.max ? "full" : check.earned > 0 ? "partial" : "none";
-  const dot = { full: "bg-success", partial: "bg-accent", none: "bg-corail" }[status];
-  const label = { full: "Réussi", partial: "Partiel", none: "Raté" }[status];
+  const ratio = check.earned / check.max;
+  const color = ratio === 1 ? "bg-success" : ratio > 0 ? "bg-warning" : "bg-danger";
 
   return (
-    <li className="flex gap-4 p-5 sm:px-8">
-      <span className={`mt-2 size-2 shrink-0 rounded-full ${dot}`} role="img" aria-label={label} />
-      <div className="min-w-0 flex-1">
-        <div className="flex items-baseline justify-between gap-4">
-          <h3 className="font-semibold">{check.label}</h3>
-          <span className="shrink-0 font-mono text-sm tabular-nums text-muted">
-            {check.earned}/{check.max}
-          </span>
-        </div>
-        <p className="mt-1 text-sm text-muted">{check.detail}</p>
-        {check.advice && (
-          <div className="mt-3 rounded-lg border border-border bg-surface/60 px-4 py-3">
-            <p className="label text-[0.65rem] text-accent-text">Conseil</p>
-            <p className="mt-1 text-sm text-pretty">{check.advice}</p>
-          </div>
-        )}
+    <li className="px-5 py-4 sm:px-6">
+      <div className="flex items-baseline justify-between gap-4">
+        <h3 className="text-sm font-medium">{check.label}</h3>
+        <span className="shrink-0 font-mono text-xs tabular-nums text-muted">
+          <span className="text-foreground">{check.earned}</span>/{check.max}
+        </span>
       </div>
+      <div className="mt-2 h-0.5 overflow-hidden rounded-full bg-surface" aria-hidden>
+        <div className={`h-full ${color}`} style={{ width: `${Math.max(ratio * 100, 0)}%` }} />
+      </div>
+      <p className="mt-2 text-sm text-muted">{check.detail}</p>
+      {check.advice && (
+        <p className="mt-3 border-l-2 border-accent pl-3 text-sm text-pretty">
+          {check.advice}
+        </p>
+      )}
     </li>
   );
 }
 
 function Notice({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section role="status" className="mt-14 rounded-xl border border-border bg-card p-6 sm:p-8">
-      <h2 className="font-semibold">{title}</h2>
-      <p className="mt-2 text-muted text-pretty">{children}</p>
+    <section role="status" className="mt-12 rounded-lg border border-border bg-card p-5 sm:p-6">
+      <h2 className="text-sm font-medium">{title}</h2>
+      <p className="mt-2 text-sm text-muted text-pretty">{children}</p>
     </section>
   );
 }
 
 export function ResultSkeleton() {
   return (
-    <div role="status" className="mt-14 rounded-xl border border-border bg-card p-8 text-center">
-      <p className="label animate-pulse">Mise au grill du README…</p>
+    <div role="status" className="mt-12 rounded-lg border border-border bg-card p-6">
+      <p className="font-mono text-sm text-muted">
+        <span className="mr-2 inline-block size-1.5 animate-pulse rounded-full bg-accent align-middle" aria-hidden />
+        Analyse du README…
+      </p>
     </div>
   );
 }
